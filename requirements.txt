@@ -1,0 +1,9 @@
+pandas
+numpy
+prophet
+scikit-learn
+streamlit
+plotly
+mysql-connector-python
+python-dotenv
+

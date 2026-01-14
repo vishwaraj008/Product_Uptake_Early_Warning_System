@@ -4,6 +4,8 @@ import pandas as pd
 from src.models.anomaly_detector import detect_anomalies
 from src.models.impact_scorer import score_impacts
 from src.db.db_utils import read_prescriptions
+from src.models.backtesting import backtest
+
 
 
 st.set_page_config(
@@ -11,11 +13,12 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📊 Prescription Uptake Early-Warning System")
+st.title("Prescription Uptake Early-Warning System")
 st.caption(
     "Detects abnormal prescription changes, quantifies business impact, "
     "and prioritizes actions."
 )
+
 
 
 st.sidebar.header("Filters")
@@ -30,6 +33,37 @@ PRICE_LOOKUP = {
     "Drug_A": 450,
     "Drug_B": 300
 }
+
+metrics, _ = backtest(
+    product=product,
+    region=region,
+    price_per_unit=PRICE_LOOKUP[product]
+)
+
+st.subheader("Model Validation (Backtesting)")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric(
+    label="Precision",
+    value=f"{metrics['precision']:.2f}"
+)
+
+col2.metric(
+    label="Recall",
+    value=f"{metrics['recall']:.2f}"
+)
+
+col3.metric(
+    label="False Positives",
+    value=str(metrics["false_positives"])
+)
+
+latency = metrics["avg_detection_latency_weeks"]
+col4.metric(
+    label="Avg Detection Latency (weeks)",
+    value="N/A" if latency is None else f"{latency:.1f}"
+)
 
 
 base_df = read_prescriptions(product=product, region=region)
